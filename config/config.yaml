@@ -1,0 +1,21 @@
+# set your twitter api parameters here
+# https://dev.twitter.com/docs/streaming-apis/parameters
+parameters:
+    track: 'wc2014, worldcup'
+    language: 'en'
+    #track locations within a lon, lat bounding box
+    #EXAMPLE: bounding box around Ireland
+    #locations: '-11.868668,51.206883,-5.232925,54.788017'
+
+# use this object to filter the output
+# control the fields you want to output with: field_name: true
+# if there are no fields, you get back everything
+filters:
+    #text: true
+
+credentials:
+    api_consumer_key: "<your API access token>"
+    api_consumer_secret: "<your API token secret>"
+    access_token_key: "<your personal key>"
+    access_token_secret: "<your personal secret>"
+
