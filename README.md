@@ -1,7 +1,9 @@
-To install dependencies, do:
-pip install -r requirements.txt
-
 # Setup
+- To install dependencies, do:
+'''
+pip install -r requirements.txt
+'''
+
 - create a twitter application [here](https://dev.twitter.com/)
 - get your API key and secret (consumer keys), and your personal keys (access token and access secret)
 
