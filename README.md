@@ -15,4 +15,6 @@ pip install -r requirements.txt
 '''
 python twitterstream.py <path-to-config-file> 
 '''
+## IMPORTANT
+This should be obvious, but DON'T push your application keys and secret to a public repo! Keep your personal config.yaml local.
 
