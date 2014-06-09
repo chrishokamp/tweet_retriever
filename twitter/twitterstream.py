@@ -12,9 +12,6 @@ from argparse import ArgumentParser
 import oauth2 as oauth
 import urllib2 as urllib
 import yaml, json
-
-
-
 signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()
 
 _debug = 0
@@ -33,19 +30,18 @@ def twitterreq(url, method, parameters):
 
     req.sign_request(signature_method_hmac_sha1, oauth_consumer, oauth_token)
 
-    # headers = req.to_header()
-
+    # TODO: support other methods
     if method == "POST":
         encoded_post_data = req.to_postdata()
     else:
         encoded_post_data = None
         url = req.to_url()
 
-    opener = urllib.OpenerDirector()
-    opener.add_handler(http_handler)
-    opener.add_handler(https_handler)
+    url_opener = urllib.OpenerDirector()
+    url_opener.add_handler(http_handler)
+    url_opener.add_handler(https_handler)
 
-    response = opener.open(url, encoded_post_data)
+    response = url_opener.open(url, encoded_post_data)
     return response
 
 def fetchsamples(parameters, filters):
@@ -87,6 +83,3 @@ if __name__ == '__main__':
     oauth_token = oauth.Token(key=access_token_key, secret=access_token_secret)
     oauth_consumer = oauth.Consumer(key=api_consumer_key, secret=api_consumer_secret)
     fetchsamples(parameters, filters)
-
-    #TEST
-    #http://search.twitter.com/search.json?q=%23occupytaksim
