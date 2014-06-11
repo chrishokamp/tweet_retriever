@@ -15,6 +15,7 @@ pip install -r requirements.txt
 ```
 python twitterstream.py <path-to-config-file> 
 ```
+- nohup python twitter/twitterstream.py twitter/chris.yaml > tweet_crawls/9.6.14-test-crawl.json &
 ## IMPORTANT
 This should be obvious, but DON'T push your application keys and secret to a public repo! Keep your personal config.yaml local.
 
