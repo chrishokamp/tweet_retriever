@@ -14,7 +14,8 @@ db = client['wcTweets']
 collection = db['tweets']
 
 def getDump(start, end, dump_location):
-    tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}).sort([('timestamp', pymongo.DESCENDING)]))
+    # tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}).sort([('timestamp', pymongo.DESCENDING)]))
+    tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}))
     # TODO: add filters
     with codecs.open(dump_location, 'w', 'utf8') as output:
         for tweet in tweets:

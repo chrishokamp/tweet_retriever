@@ -1,4 +1,8 @@
 # Setup
+```
+git clone https://github.com/chrishokamp/tweet_retriever.git
+```
+
 - To install dependencies, do:
 ```
 pip install -r requirements.txt
