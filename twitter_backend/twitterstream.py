@@ -63,6 +63,7 @@ def fetchsamples(parameters, filters, storeFunc=None):
     # return (tweets)
 
 # working - create client progammatically
+from convert_timestamp import convert_timestamp
 class TwitterClient:
     def __init__(self, config_file):
 
@@ -91,15 +92,19 @@ class TwitterClient:
     def begin_fetching(self, store_func=None):
         response = self.twitterreq(self.url, 'POST')
         for line in response:
-            print(response)
+            # print(response)
             tweet = json.loads(line.decode('utf8'))
+            tweet['timestamp'] = convert_timestamp(tweet['created_at'])
             if self.filters is not None:
                 tweet = { key: tweet[key] for key in tweet.keys() if key in filters }
             # print(json.dumps(tweet))
 
+            # add a proper timestamp
+
             # store the tweet in mongodb
             if store_func:
                 print('store func exists')
+                print(tweet)
                 store_func(tweet)
 
     def stop_fetching(self):

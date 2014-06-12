@@ -3,6 +3,8 @@
 
 import unittest
 import json as json
+import datetime
+import pymongo
 
 # todo: the module name 'twitter' conflicts with the python twitter module
 import twitterstream
@@ -39,6 +41,19 @@ class TestMongoWriter(unittest.TestCase):
         retrieved_tweet = self.db.get_data({u'_id': item_id})
         print(retrieved_tweet)
         self.assertTrue(retrieved_tweet is not None)
+
+    def test_time_range(self):
+        # see: http://cookbook.mongodb.org/patterns/date_range/
+        new_db = MongoWriter('wcTweets', 'tweets')
+        # hours
+        two_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=2)
+        one_hour_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        # minutes
+        ten_min_ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
+        five_min_ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=5)
+        tweets = list(new_db.collection.find({'timestamp': { '$gte': ten_min_ago, '$lte': five_min_ago}}).sort([('timestamp', pymongo.DESCENDING)]))
+        print("PRINTING TWEETS FOR THE LAST 3 DAYS")
+        print(tweets)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,6 @@
+
+# a date in the twitter 'created_at' format - default is for the last 1 day
+#start: 'Thu Jun 12 13:08:42 +0000 2014'
+#end: 'Thu Jun 12 16:08:42 +0000 2014'
+
+dump_location: 'dump.test.out'
