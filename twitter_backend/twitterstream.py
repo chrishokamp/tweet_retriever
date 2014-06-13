@@ -92,20 +92,23 @@ class TwitterClient:
     def begin_fetching(self, store_func=None):
         response = self.twitterreq(self.url, 'POST')
         for line in response:
-            # print(response)
-            tweet = json.loads(line.decode('utf8'))
-            tweet['timestamp'] = convert_timestamp(tweet['created_at'])
-            if self.filters is not None:
-                tweet = { key: tweet[key] for key in tweet.keys() if key in filters }
-            # print(json.dumps(tweet))
+            try:
+                # print(response)
+                tweet = json.loads(line.decode('utf8'))
+                tweet['timestamp'] = convert_timestamp(tweet['created_at'])
+                if self.filters is not None:
+                    tweet = { key: tweet[key] for key in tweet.keys() if key in filters }
+                # print(json.dumps(tweet))
 
-            # add a proper timestamp
+                # add a proper timestamp
 
-            # store the tweet in mongodb
-            if store_func:
-                print('store func exists')
-                print(tweet)
-                store_func(tweet)
+                # store the tweet in mongodb
+                if store_func:
+                    print('store func exists')
+                    print(tweet)
+                    store_func(tweet)
+            except (KeyError, UnicodeDecodeError) as e:
+                pass
 
     def stop_fetching(self):
         # close the streaming connection
