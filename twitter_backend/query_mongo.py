@@ -16,6 +16,9 @@ collection = db['tweets']
 def getDump(start, end, dump_location):
     # tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}).sort([('timestamp', pymongo.DESCENDING)]))
     tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}))
+    # random selection
+    sample_size = 1000
+    rand_smpl = [ tweets[i] for i in sorted(random.sample(xrange(len(tweets)), sample_size)) ]
     # TODO: add filters
     with codecs.open(dump_location, 'w', 'utf8') as output:
         for tweet in tweets:
