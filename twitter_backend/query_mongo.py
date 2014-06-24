@@ -3,7 +3,7 @@
 
 from __future__ import print_function,division
 import datetime
-import os, yaml, codecs
+import os, yaml, codecs, random
 from argparse import ArgumentParser
 
 from convert_timestamp import convert_timestamp
