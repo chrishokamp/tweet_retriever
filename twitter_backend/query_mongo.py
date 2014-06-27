@@ -3,7 +3,8 @@
 
 from __future__ import print_function,division
 import datetime
-import os, yaml, codecs, random
+from bson import json_util
+import os, yaml, codecs, random, json
 from argparse import ArgumentParser
 
 from convert_timestamp import convert_timestamp
@@ -15,16 +16,20 @@ collection = db['tweets']
 
 def getDump(start, end, dump_location):
     # tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}).sort([('timestamp', pymongo.DESCENDING)]))
-    tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}))
+    tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}, 'coordinates': { '$ne': None }}).sort([('timestamp', pymongo.ASCENDING)]))
     # random selection
     sample_size = 1000
-    rand_smpl = [ tweets[i] for i in sorted(random.sample(xrange(len(tweets)), sample_size)) ]
+    tweets = [ tweets[i] for i in sorted(random.sample(xrange(len(tweets)), sample_size)) ]
     # TODO: add filters
     with codecs.open(dump_location, 'w', 'utf8') as output:
-        for tweet in tweets:
-            output.write(tweet['text'] + '\n')
-
-
+	# to use this format, do:
+        # json.loads(aJsonString, object_hook=json_util.object_hook)
+        output.write(json.dumps(tweets, default=json_util.default, indent=4))
+#       for tweet in tweets:
+            #output.write('TEXT: {}\n\tTIMESTAMP: {}'.format(tweet['text'], str(tweet['timestamp'])))
+            #output.write('TEXT: '+ tweet['text'] + '\n\tTIMESTAMP: ' + str(tweet['timestamp']) + ' COOR: ' + str(tweet['coordinates']) + '\n\tPLACE: ' + str(tweet['place']) + '\n')
+#            output.write(json.dumps(tweet, default=json_util.default))
+            
 if __name__ == '__main__':
 
     # get the command line options
