@@ -9,6 +9,7 @@ import pymongo
 # todo: the module name 'twitter' conflicts with the python twitter module
 import twitterstream
 from mongo_client import MongoWriter
+
 import ipdb as ipdb
 
 '''
@@ -21,7 +22,6 @@ sample_tweet='{"contributors": null, "truncated": false, "text": "RT @worldsocce
 
 class TestMongoWriter(unittest.TestCase):
 
-    # setup -- create a rf_tagger, morph_converter, and IndexMapper, and test that they work together
     def setUp(self):
         self.db = MongoWriter('test_tweets', 'tweets')
         self.db.collection.drop()

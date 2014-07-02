@@ -26,3 +26,4 @@ class MongoWriter():
         print(mongo_query)
         item = self.collection.find_one(mongo_query)
         return item
+

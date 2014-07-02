@@ -14,22 +14,48 @@ client = pymongo.MongoClient()
 db = client['wcTweets']
 collection = db['tweets']
 
-def getDump(start, end, dump_location):
+def getTimeDump(start, end, dump_location):
     # tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}}).sort([('timestamp', pymongo.DESCENDING)]))
     tweets = list(collection.find({'timestamp': { '$gte': start, '$lte': end}, 'coordinates': { '$ne': None }}).sort([('timestamp', pymongo.ASCENDING)]))
     # random selection
     sample_size = 1000
     tweets = [ tweets[i] for i in sorted(random.sample(xrange(len(tweets)), sample_size)) ]
-    # TODO: add filters
+    # add filters?
     with codecs.open(dump_location, 'w', 'utf8') as output:
 	# to use this format, do:
         # json.loads(aJsonString, object_hook=json_util.object_hook)
         output.write(json.dumps(tweets, default=json_util.default, indent=4))
-#       for tweet in tweets:
-            #output.write('TEXT: {}\n\tTIMESTAMP: {}'.format(tweet['text'], str(tweet['timestamp'])))
-            #output.write('TEXT: '+ tweet['text'] + '\n\tTIMESTAMP: ' + str(tweet['timestamp']) + ' COOR: ' + str(tweet['coordinates']) + '\n\tPLACE: ' + str(tweet['place']) + '\n')
-#            output.write(json.dumps(tweet, default=json_util.default))
-            
+
+
+# TODO: add real sentiment query -- depends on sentiment analysis code
+def get_sentiment(text):
+    pass
+
+# WORKING
+# STEPS
+# 1 - get tweets by timestamp, group by timestamp (60 seconds) -- do this in mongo query(?)
+# 2 - for each tweet, calculate sentiment relative to entities in configuration, store into 'entity_tweets'
+
+# 3 - create a new mongo collection with 'match_id',
+# match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
+# def create_match_with_sentiment(match_obj):
+def create_match_with_sentiment(match_obj):
+    match_name = 'test'
+    start_time = convert_timestamp('Wed Jul 2 14:00:00 +0000 2014')
+    end_time = convert_timestamp('Wed Jul 2 15:00:00 +0000 2014')
+
+    # $match, $project the minute substring, then $group by minute
+    match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
+                                              {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
+                                              {'$group': { '_id': '$minute', 'tweets': { '$push': '$text' } }}])
+
+    return match_tweets
+
+# Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
+# get the substring from (0,17) for minutes
+# db.tweets.find({'timestamp': { $gte: ISODate("2014-06-12T15:31:18Z") }} ).count()
+# This query works in the mongo shell:
+
 if __name__ == '__main__':
 
     # get the command line options
@@ -67,4 +93,4 @@ if __name__ == '__main__':
         print('end is none')
         end = now
 
-    getDump(start, end, dump_location)
+    getTimeDump(start, end, dump_location)

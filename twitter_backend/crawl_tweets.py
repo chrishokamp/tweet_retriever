@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 from twitterstream import TwitterClient
 from mongo_client import MongoWriter
 
-
 # open the twitterstream
 # crawl tweets and pop them into mongo
 
