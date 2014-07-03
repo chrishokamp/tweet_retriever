@@ -13,7 +13,7 @@ import os, yaml, codecs, random, json
 from argparse import ArgumentParser
 from collections import defaultdict
 import re
-import ruleBased
+from tweet_sentiment import ruleBased
 
 from convert_timestamp import convert_timestamp
 import pymongo
@@ -38,7 +38,6 @@ def getTimeDump(start, end, dump_location):
 # TODO: add real sentiment query -- depends on sentiment analysis code
 def get_sentiment(text):
     return ruleBased.calculateScore(text)
-    # return 3.0
 
 #find team name from a tweet, return true if find, else false
 def contains_entity(name, tweet):
