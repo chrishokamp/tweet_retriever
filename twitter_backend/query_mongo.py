@@ -29,27 +29,36 @@ def getTimeDump(start, end, dump_location):
 
 # TODO: add real sentiment query -- depends on sentiment analysis code
 def get_sentiment(text):
-    pass
+    return 3.0
 
 # WORKING
 # STEPS
-# 1 - get tweets by timestamp, group by timestamp (60 seconds) -- do this in mongo query(?)
+# 1 - get tweets by timestamp, group by timestamp
 # 2 - for each tweet, calculate sentiment relative to entities in configuration, store into 'entity_tweets'
+#     --> WORKING - see Jian's code for this
 
 # 3 - create a new mongo collection with 'match_id',
 # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
 # def create_match_with_sentiment(match_obj):
-def create_match_with_sentiment(match_obj):
-    match_name = 'test'
-    start_time = convert_timestamp('Wed Jul 2 14:00:00 +0000 2014')
-    end_time = convert_timestamp('Wed Jul 2 15:00:00 +0000 2014')
+def get_tweets_in_window(match_obj):
+    match_name = match_obj['matchName']
+    start_time = convert_timestamp(match_obj['time']['startTime'])
+    end_time = convert_timestamp(match_obj['time']['endTime'])
 
     # $match, $project the minute substring, then $group by minute
     match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
                                               {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
-                                              {'$group': { '_id': '$minute', 'tweets': { '$push': '$text' } }}])
+                                              {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
 
-    return match_tweets
+    tweets_with_sentiment = []
+    for minute in match_tweets['result']:
+        avg_sentiment = sum([get_sentiment(t['text']) for t in minute['tweets'] ]) / len(minute['tweets'])
+        tweet_sentiments = [ { 'text': t['text'], 'sentiment': get_sentiment(t['text']) } for t in minute['tweets'] ]
+        # pass list to jian to get avg sentiment
+        tweets_with_sentiment.append([{ 'minute': minute['_id'], 'avgSentiment': avg_sentiment, 'tweets': tweet_sentiments }])
+
+    # match_tweets['results']
+    return tweets_with_sentiment
 
 # Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
 # get the substring from (0,17) for minutes
