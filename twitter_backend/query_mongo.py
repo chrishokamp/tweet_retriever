@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+@author: Chris Hokamp
+@contact: chris.hokamp@gmail.com
+@license: WTFPL
+'''
 
 from __future__ import print_function,division
 import datetime
 from bson import json_util
 import os, yaml, codecs, random, json
 from argparse import ArgumentParser
+from collections import defaultdict
 
 from convert_timestamp import convert_timestamp
 import pymongo
@@ -31,6 +37,9 @@ def getTimeDump(start, end, dump_location):
 def get_sentiment(text):
     return 3.0
 
+def contains_entity(entity, text):
+    return True
+
 # WORKING
 # STEPS
 # 1 - get tweets by timestamp, group by timestamp
@@ -42,6 +51,7 @@ def get_sentiment(text):
 # def create_match_with_sentiment(match_obj):
 def get_tweets_in_window(match_obj):
     match_name = match_obj['matchName']
+    entity_list = match_obj['entities']
     start_time = convert_timestamp(match_obj['time']['startTime'])
     end_time = convert_timestamp(match_obj['time']['endTime'])
 
@@ -50,14 +60,27 @@ def get_tweets_in_window(match_obj):
                                               {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
                                               {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
 
-    tweets_with_sentiment = []
+    tweets_with_sentiment = {}
+    entity_sentiments = defaultdict(list)
     for minute in match_tweets['result']:
-        avg_sentiment = sum([get_sentiment(t['text']) for t in minute['tweets'] ]) / len(minute['tweets'])
-        tweet_sentiments = [ { 'text': t['text'], 'sentiment': get_sentiment(t['text']) } for t in minute['tweets'] ]
-        # pass list to jian to get avg sentiment
-        tweets_with_sentiment.append([{ 'minute': minute['_id'], 'avgSentiment': avg_sentiment, 'tweets': tweet_sentiments }])
+        minute_tweets = minute['tweets']
+        # filter tweets by entity mention
+        for entity in entity_list:
+            print(entity)
+            # avoid division by 0
+            num_tweets = 1
+            if len(minute['tweets']) > 0:
+                num_tweets = len(minute_tweets)
+            avg_sentiment = sum([get_sentiment(t['text']) for t in minute_tweets if contains_entity(entity, t['text']) ]) / num_tweets
+            entity_sentiments[entity].append(avg_sentiment)
+    tweets_with_sentiment['entitySentiments'] = []
+    for entity, sentiment_list in entity_sentiments.items():
+        tweets_with_sentiment['entitySentiments'].append({ 'entityName': entity, 'sentiments': sentiment_list })
 
-    # match_tweets['results']
+        # tweet_sentiments = [ { 'text': t['text'], 'sentiment': get_sentiment(t['text']) } for t in minute['tweets'] ]
+        # pass list to jian to get avg sentiment
+        # tweets_with_sentiment.append([{ 'minute': minute['_id'], 'avgSentiment': avg_sentiment, 'tweets': tweet_sentiments }])
+
     return tweets_with_sentiment
 
 # Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
