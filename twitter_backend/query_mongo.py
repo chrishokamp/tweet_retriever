@@ -12,6 +12,8 @@ from bson import json_util
 import os, yaml, codecs, random, json
 from argparse import ArgumentParser
 from collections import defaultdict
+import re
+import ruleBased
 
 from convert_timestamp import convert_timestamp
 import pymongo
@@ -35,10 +37,17 @@ def getTimeDump(start, end, dump_location):
 
 # TODO: add real sentiment query -- depends on sentiment analysis code
 def get_sentiment(text):
-    return 3.0
+    return ruleBased.calculateScore(text)
+    # return 3.0
 
-def contains_entity(entity, text):
-    return True
+#find team name from a tweet, return true if find, else false
+def contains_entity(name, tweet):
+    if re.search( r'\b' + re.escape(name) + r'\b', tweet, re.M|re.I):
+        return True;
+    else:
+        return False;
+# def contains_entity(entity, text):
+#     return True
 
 # WORKING
 # STEPS
@@ -55,7 +64,7 @@ def get_tweets_in_window(match_obj):
     start_time = convert_timestamp(match_obj['time']['startTime'])
     end_time = convert_timestamp(match_obj['time']['endTime'])
 
-    # $match, $project the minute substring, then $group by minute
+    # $match, $project the minute substring from the timestamp, then $group by minute
     match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
                                               {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
                                               {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
@@ -66,12 +75,14 @@ def get_tweets_in_window(match_obj):
         minute_tweets = minute['tweets']
         # filter tweets by entity mention
         for entity in entity_list:
+            entity_tweets = [ t for t in minute_tweets if contains_entity(entity, t['text']) ]
             print(entity)
             # avoid division by 0
             num_tweets = 1
-            if len(minute['tweets']) > 0:
-                num_tweets = len(minute_tweets)
-            avg_sentiment = sum([get_sentiment(t['text']) for t in minute_tweets if contains_entity(entity, t['text']) ]) / num_tweets
+            if len(entity_tweets) > 0:
+                # using the total number of tweets instead of entity tweets as a proxy to 'current hype about this entity'
+                num_tweets = len(entity_tweets)
+            avg_sentiment = sum([get_sentiment(t['text']) for t in entity_tweets ]) / num_tweets
             entity_sentiments[entity].append(avg_sentiment)
     tweets_with_sentiment['entitySentiments'] = []
     for entity, sentiment_list in entity_sentiments.items():
