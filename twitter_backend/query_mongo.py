@@ -17,6 +17,7 @@ from tweet_sentiment import ruleBased
 
 from convert_timestamp import convert_timestamp
 import pymongo
+from pymongo.errors import OperationFailure
 
 client = pymongo.MongoClient()
 db = client['wcTweets']
@@ -65,9 +66,14 @@ def get_tweets_in_window(match_obj):
 
     # $match, $project the minute substring from the timestamp, then $group by minute
     # note: this code assumes that we actually have tweets for every minute
-    match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
-                                              {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
-                                              {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
+    match_tweets = {}
+    match_tweets['result'] = []
+    try:
+        match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
+                                                  {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
+                                                  {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
+    except OperationFailure:
+        pass
 
     tweets_with_sentiment = {}
     entity_sentiments = defaultdict(list)
