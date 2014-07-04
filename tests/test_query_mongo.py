@@ -52,6 +52,12 @@ class TestQueryMongo(unittest.TestCase):
                 # check if the match data is empty (if we don't have data for this match)
 
                 if len(match_sentiment_data['entitySentiments']) > 0:
+                    # insert into matches table in mongo here
+                    client = pymongo.MongoClient()
+                    db = client['wcTweets']
+                    collection = db['matches']
+                    collection.insert(match_sentiment_data)
+
                     print(match_sentiment_data)
                     print('We have tweets for Match: {}'.format(match['matchName']))
                 match_sentiment_data = query_mongo.get_tweets_in_window(match_obj)
