@@ -64,6 +64,7 @@ def get_tweets_in_window(match_obj):
     end_time = convert_timestamp(match_obj['time']['endTime'])
 
     # $match, $project the minute substring from the timestamp, then $group by minute
+    # note: this code assumes that we actually have tweets for every minute
     match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
                                               {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
                                               {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
