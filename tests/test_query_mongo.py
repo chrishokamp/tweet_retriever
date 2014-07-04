@@ -39,7 +39,7 @@ class TestQueryMongo(unittest.TestCase):
 
     def test_building_match_collections(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
-        with open(os.path.join(__location__, "../data/matches.json")) as matchfile:
+        with open(os.path.join(__location__, "../data/matches.pruned.json")) as matchfile:
             match_list=json.loads(matchfile.read())
             # print(json.dumps(match_list))
             # map each list entry into a match object for querying
@@ -56,11 +56,11 @@ class TestQueryMongo(unittest.TestCase):
                     client = pymongo.MongoClient()
                     db = client['wcTweets']
                     collection = db['matches']
+                    match_sentiment_data['match_name'] = match['matchName']
                     collection.insert(match_sentiment_data)
 
                     print(match_sentiment_data)
                     print('We have tweets for Match: {}'.format(match['matchName']))
-                match_sentiment_data = query_mongo.get_tweets_in_window(match_obj)
 
 if __name__ == '__main__':
     unittest.main()
