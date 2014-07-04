@@ -1,0 +1,146 @@
+[
+    {
+        "entities": [
+            "england",
+            "italy"
+        ],
+        "endTime": "Sat Jun 14 23:45:00 +0000 2014",
+        "startTime": "Sat Jun 14 22:00:00 +0000 2014",
+        "matchName": "eng_ita"
+    },
+    {
+        "entities": [
+            "germany",
+            "portugal"
+        ],
+        "endTime": "Mon Jun 16 17:45:00 +0000 2014",
+        "startTime": "Mon Jun 16 16:00:00 +0000 2014",
+        "matchName": "ger_por"
+    },
+    {
+        "entities": [
+            "ghana",
+            "usa"
+        ],
+        "endTime": "Mon Jun 16 23:45:00 +0000 2014",
+        "startTime": "Mon Jun 16 22:00:00 +0000 2014",
+        "matchName": "gha_usa"
+    },
+    {
+        "entities": [
+            "brazil",
+            "mexico"
+        ],
+        "endTime": "Tue Jun 17 20:45:00 +0000 2014",
+        "startTime": "Tue Jun 17 19:00:00 +0000 2014",
+        "matchName": "bra_mex"
+    },
+    {
+        "entities": [
+            "australia",
+            "netherlands"
+        ],
+        "endTime": "Wed Jun 18 17:45:00 +0000 2014",
+        "startTime": "Wed Jun 18 16:00:00 +0000 2014",
+        "matchName": "aus_ned"
+    },
+    {
+        "entities": [
+            "japan",
+            "greece"
+        ],
+        "endTime": "Thu Jun 19 23:45:00 +0000 2014",
+        "startTime": "Thu Jun 19 22:00:00 +0000 2014",
+        "matchName": "jpn_gre"
+    },
+    {
+        "entities": [
+            "italy",
+            "costa rica"
+        ],
+        "endTime": "Fri Jun 20 17:45:00 +0000 2014",
+        "startTime": "Fri Jun 20 16:00:00 +0000 2014",
+        "matchName": "ita_crc"
+    },
+    {
+        "entities": [
+            "germany",
+            "ghana"
+        ],
+        "endTime": "Sat Jun 21 20:45:00 +0000 2014",
+        "startTime": "Sat Jun 21 19:00:00 +0000 2014",
+        "matchName": "ger_gha"
+    },
+    {
+        "entities": [
+            "usa",
+            "portugal"
+        ],
+        "endTime": "Sun Jun 22 22:45:00 +0000 2014",
+        "startTime": "Sun Jun 22 21:00:00 +0000 2014",
+        "matchName": "usa_por"
+    },
+    {
+        "entities": [
+            "australia",
+            "spain"
+        ],
+        "endTime": "Mon Jun 23 17:45:00 +0000 2014",
+        "startTime": "Mon Jun 23 16:00:00 +0000 2014",
+        "matchName": "aus_esp"
+    },
+    {
+        "entities": [
+            "portugal",
+            "ghana"
+        ],
+        "endTime": "Thu Jun 26 17:45:00 +0000 2014",
+        "startTime": "Thu Jun 26 16:00:00 +0000 2014",
+        "matchName": "por_gha"
+    },
+    {
+        "entities": [
+            "usa",
+            "germany"
+        ],
+        "endTime": "Thu Jun 26 17:45:00 +0000 2014",
+        "startTime": "Thu Jun 26 16:00:00 +0000 2014",
+        "matchName": "usa_ger"
+    },
+    {
+        "entities": [
+            "netherlands",
+            "mexico"
+        ],
+        "endTime": "Sun Jun 29 17:45:00 +0000 2014",
+        "startTime": "Sun Jun 29 16:00:00 +0000 2014",
+        "matchName": "ned_mex"
+    },
+    {
+        "entities": [
+            "france",
+            "nigeria"
+        ],
+        "endTime": "Mon Jun 30 17:45:00 +0000 2014",
+        "startTime": "Mon Jun 30 16:00:00 +0000 2014",
+        "matchName": "fra_nga"
+    },
+    {
+        "entities": [
+            "germany",
+            "algeria"
+        ],
+        "endTime": "Mon Jun 30 21:45:00 +0000 2014",
+        "startTime": "Mon Jun 30 20:00:00 +0000 2014",
+        "matchName": "ger_alg"
+    },
+    {
+        "entities": [
+            "belgium",
+            "usa"
+        ],
+        "endTime": "Tue Jul 01 21:45:00 +0000 2014",
+        "startTime": "Tue Jul 01 20:00:00 +0000 2014",
+        "matchName": "bel_usa"
+    },
+]
