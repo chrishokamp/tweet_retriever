@@ -76,15 +76,13 @@ class TestQueryMongo(unittest.TestCase):
     @unittest.skip('skipping')
     def test_build_match_collection_from_file(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
-        with open(os.path.join(__location__, "../data/matches.pruned.json")) as matchfile:
+        with open(os.path.join(__location__, "../data/matches_and_events.pruned.json")) as matchfile:
             match_list=json.loads(matchfile.read())
             # print(json.dumps(match_list))
             # map each list entry into a match object for querying
             for match in match_list:
-                start_time = 'Wed Jul 2 14:00:00 +0000 2014'
-                end_time = 'Wed Jul 2 15:00:00 +0000 2014'
-                entity_list = ['germany', 'ghana']
-                match_obj= { 'matchName': match['matchName'], 'time': { 'startTime': match['startTime'], 'endTime': match['endTime'] }, 'entities': match['entities'] }
+                # match_obj= { 'matchName': match['matchName'], 'time': { 'startTime': match['startTime'], 'endTime': match['endTime'] }, 'entities': match['entities'] }
+                match_obj= match
                 match_sentiment_data = query_mongo.get_tweets_in_window(match_obj)
                 # check if the match data is empty (if we don't have data for this match)
 
