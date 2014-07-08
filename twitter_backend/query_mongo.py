@@ -46,26 +46,20 @@ def contains_entity(name, tweet):
         return True;
     else:
         return False;
-# def contains_entity(entity, text):
-#     return True
 
-# WORKING
-# STEPS
-# 1 - get tweets by timestamp, group by timestamp
-# 2 - for each tweet, calculate sentiment relative to entities in configuration, store into 'entity_tweets'
-#     --> WORKING - see Jian's code for this
-
-# 3 - create a new mongo collection with 'match_id',
 # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
-# def create_match_with_sentiment(match_obj):
+
+# Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
+# get the substring from (0,17) for minutes
+# db.tweets.find({'timestamp': { $gte: ISODate("2014-06-12T15:31:18Z") }} ).count()
+
 def get_tweets_in_window(match_obj):
     match_name = match_obj['matchName']
     entity_list = match_obj['entities']
+    significant_events = match_obj['significantEvents']
     start_time = convert_timestamp(match_obj['time']['startTime'])
     end_time = convert_timestamp(match_obj['time']['endTime'])
 
-    # $match, $project the minute substring from the timestamp, then $group by minute
-    # note: this code assumes that we actually have tweets for every minute
     match_tweets = {}
     match_tweets['result'] = []
     try:
@@ -75,8 +69,9 @@ def get_tweets_in_window(match_obj):
     except OperationFailure:
         pass
 
-    tweets_with_sentiment = {}
     entity_sentiments = defaultdict(list)
+    # sort by minute
+    match_tweets['result'] = sorted(match_tweets['result'], key=lambda x: x['_id'])
     for minute in match_tweets['result']:
         minute_tweets = minute['tweets']
         # filter tweets by entity mention
@@ -89,21 +84,21 @@ def get_tweets_in_window(match_obj):
                 # using the total number of tweets instead of entity tweets as a proxy to 'current hype about this entity'
                 num_tweets = len(entity_tweets)
             avg_sentiment = sum([get_sentiment(t['text']) for t in entity_tweets ]) / num_tweets
-            entity_sentiments[entity].append(avg_sentiment)
+            # IMPORTANT: add 'Z' to make this UTC! (ISODate format)
+            entity_sentiments[entity].append( { 'timestamp': minute['_id']+'Z', 'sentiment': avg_sentiment } )
+
+    tweets_with_sentiment = {}
     tweets_with_sentiment['entitySentiments'] = []
     for entity, sentiment_list in entity_sentiments.items():
         tweets_with_sentiment['entitySentiments'].append({ 'entityName': entity, 'sentiments': sentiment_list })
 
-        # tweet_sentiments = [ { 'text': t['text'], 'sentiment': get_sentiment(t['text']) } for t in minute['tweets'] ]
-        # pass list to jian to get avg sentiment
-        # tweets_with_sentiment.append([{ 'minute': minute['_id'], 'avgSentiment': avg_sentiment, 'tweets': tweet_sentiments }])
+    tweets_with_sentiment['matchName'] = match_name
+    tweets_with_sentiment['startTime'] = start_time
+    tweets_with_sentiment['endTime'] = end_time
+    tweets_with_sentiment['significantEvents'] = significant_events
 
     return tweets_with_sentiment
 
-# Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
-# get the substring from (0,17) for minutes
-# db.tweets.find({'timestamp': { $gte: ISODate("2014-06-12T15:31:18Z") }} ).count()
-# This query works in the mongo shell:
 
 if __name__ == '__main__':
 

@@ -15,6 +15,9 @@ import pymongo
 import query_mongo
 from convert_timestamp import convert_timestamp
 
+# to let json know how to handle bson stuff
+from bson import json_util
+
 import os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -38,6 +41,40 @@ class TestQueryMongo(unittest.TestCase):
         # print("Number of Groups: {}".format(str(len(aggregated_tweets))))
 
     def test_building_match_collections(self):
+        # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
+        start_time = 'Wed Jul 2 14:00:00 +0000 2014'
+        end_time = 'Wed Jul 2 15:00:00 +0000 2014'
+        entity_list = ['germany', 'ghana']
+        significant_events = [
+            {
+                "player": "V\u00edctor Bern\u00e1rdez",
+                "team": "ghana",
+                "type": "yellow card",
+                "timestamp": "Wed Jul 2 14:21:00 +0000 2014"
+            },
+            {
+                "player": "Carlo Costly",
+                "team": "germany",
+                "type": "goal",
+                "timestamp": "Wed Jul 2 14:35:00 +0000 2014"
+            },
+
+
+            ]
+        match_obj= { 'matchName': 'testMatch', 'time': { 'startTime': start_time, 'endTime': end_time }, 'entities': entity_list, 'significantEvents': significant_events }
+        match_sentiment_data = query_mongo.get_tweets_in_window(match_obj)
+
+        self.assertTrue(len(match_sentiment_data['entitySentiments'][0]['sentiments']) == len(match_sentiment_data['entitySentiments'][1]['sentiments']) == 61, 'the number of time windows in the data should be correct.')
+        self.assertFalse(len(match_sentiment_data['entitySentiments'][0]['sentiments']) == len(match_sentiment_data['entitySentiments'][1]['sentiments']) == 60, 'the number of time windows in the data should not be wrong.')
+        print(match_sentiment_data)
+        with open('sample_match.out', 'w') as out:
+            # out.write(json.dumps(match_sentiment_data, indent=4, object_hook=json_util.object_hook))
+            out.write(json.dumps(match_sentiment_data, indent=4, default=json_util.default))
+            # to use this format, do:\n",
+            #json.loads(aJsonString, object_hook=json_util.object_hook)\n",
+
+    @unittest.skip('skipping')
+    def test_build_match_collection_from_file(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
         with open(os.path.join(__location__, "../data/matches.pruned.json")) as matchfile:
             match_list=json.loads(matchfile.read())
