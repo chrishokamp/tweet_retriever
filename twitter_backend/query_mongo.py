@@ -57,8 +57,8 @@ def get_tweets_in_window(match_obj):
     match_name = match_obj['matchName']
     entity_list = match_obj['entities']
     significant_events = match_obj['significantEvents']
-    start_time = convert_timestamp(match_obj['time']['startTime'])
-    end_time = convert_timestamp(match_obj['time']['endTime'])
+    start_time = convert_timestamp(match_obj['startTime'])
+    end_time = convert_timestamp(match_obj['endTime'])
 
     match_tweets = {}
     match_tweets['result'] = []

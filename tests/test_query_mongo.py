@@ -40,6 +40,7 @@ class TestQueryMongo(unittest.TestCase):
         print(json.dumps(match_sentiment_data))
         # print("Number of Groups: {}".format(str(len(aggregated_tweets))))
 
+    @unittest.skip('skipping')
     def test_building_match_collections(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
         start_time = 'Wed Jul 2 14:00:00 +0000 2014'
@@ -73,7 +74,6 @@ class TestQueryMongo(unittest.TestCase):
             # to use this format, do:\n",
             #json.loads(aJsonString, object_hook=json_util.object_hook)\n",
 
-    @unittest.skip('skipping')
     def test_build_match_collection_from_file(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
         with open(os.path.join(__location__, "../data/matches_and_events.pruned.json")) as matchfile:

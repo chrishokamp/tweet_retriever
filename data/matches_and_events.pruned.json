@@ -747,15 +747,6 @@
     },
     {
         "entities": [
-            "netherlands",
-            "argentina"
-        ],
-        "endTime": "Wed Jul 09 21:45:00 +0000 2014",
-        "startTime": "Wed Jul 09 20:00:00 +0000 2014",
-        "matchName": "netherlands_argentina"
-    },
-    {
-        "entities": [
             "usa",
             "portugal"
         ],
@@ -1885,5 +1876,5 @@
                 "timestamp": "Wed Jun 25 21:40:00 +0000 2014"
             }
         ]
-    },
+    }
 ]
