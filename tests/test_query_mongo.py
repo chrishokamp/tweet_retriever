@@ -74,6 +74,22 @@ class TestQueryMongo(unittest.TestCase):
             # to use this format, do:\n",
             #json.loads(aJsonString, object_hook=json_util.object_hook)\n",
 
+    @unittest.skip('skipping')
+    def test_exclusive_contains(self):
+        ex_contains = query_mongo.exclusive_contains_entity
+        test_tweet_both = 'this says germany brazil'
+        test_tweet_germ = 'this says germany'
+        test_tweet_brazil = 'this says brazil'
+        entity_list = ['germany', 'brazil', 'cuba']
+        idx = 1
+        other_entities= list(entity_list)
+        del other_entities[idx]
+        print('other entities: ')
+        print(other_entities)
+        self.assertTrue(ex_contains('brazil', test_tweet_brazil, dont_include=other_entities))
+        self.assertFalse(ex_contains('brazil', test_tweet_both, dont_include=other_entities))
+        self.assertFalse(ex_contains('brazil', test_tweet_germ, dont_include=other_entities))
+
     def test_build_match_collection_from_file(self):
         # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
         with open(os.path.join(__location__, "../data/matches_and_events.pruned.json")) as matchfile:

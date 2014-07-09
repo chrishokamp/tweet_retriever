@@ -43,9 +43,21 @@ def get_sentiment(text):
 #find team name from a tweet, return true if find, else false
 def contains_entity(name, tweet):
     if re.search( r'\b' + re.escape(name) + r'\b', tweet, re.M|re.I):
-        return True;
+        return True
     else:
-        return False;
+        return False
+
+#find team name from a tweet, return true if find, else false
+def exclusive_contains_entity(name, tweet, dont_include=[]):
+    exclusive_match = True
+    for w in dont_include:
+        print('w is: '+ w)
+        if re.search( r'\b' + re.escape(w) + r'\b', tweet, re.M|re.I):
+            exclusive_match=False
+    if exclusive_match and re.search( r'\b' + re.escape(name) + r'\b', tweet, re.M|re.I):
+        return True
+    else:
+        return False
 
 # match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
 
@@ -75,8 +87,11 @@ def get_tweets_in_window(match_obj):
     for minute in match_tweets['result']:
         minute_tweets = minute['tweets']
         # filter tweets by entity mention
-        for entity in entity_list:
-            entity_tweets = [ t for t in minute_tweets if contains_entity(entity, t['text']) ]
+        for idx,entity in enumerate(entity_list):
+            # entity_tweets = [ t for t in minute_tweets if contains_entity(entity, t['text']) ]
+            other_entities=list(entity_list)
+            del other_entities[idx]
+            entity_tweets = [ t for t in minute_tweets if exclusive_contains_entity(entity, t['text'], dont_include=other_entities) ]
             print(entity)
             # avoid division by 0
             num_tweets = 1
