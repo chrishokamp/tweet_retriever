@@ -12,7 +12,7 @@ from bson import json_util
 import os, yaml, codecs, random, json
 from argparse import ArgumentParser
 from collections import defaultdict
-import re
+import re, math
 from tweet_sentiment import ruleBased
 
 from convert_timestamp import convert_timestamp
@@ -51,7 +51,6 @@ def contains_entity(name, tweet):
 def exclusive_contains_entity(name, tweet, dont_include=[]):
     exclusive_match = True
     for w in dont_include:
-        print('w is: '+ w)
         if re.search( r'\b' + re.escape(w) + r'\b', tweet, re.M|re.I):
             exclusive_match=False
     if exclusive_match and re.search( r'\b' + re.escape(name) + r'\b', tweet, re.M|re.I):
@@ -59,32 +58,10 @@ def exclusive_contains_entity(name, tweet, dont_include=[]):
     else:
         return False
 
-# match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
-
-# Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
-# get the substring from (0,17) for minutes
-# db.tweets.find({'timestamp': { $gte: ISODate("2014-06-12T15:31:18Z") }} ).count()
-
-def get_tweets_in_window(match_obj):
-    match_name = match_obj['matchName']
-    entity_list = match_obj['entities']
-    significant_events = match_obj['significantEvents']
-    start_time = convert_timestamp(match_obj['startTime'])
-    end_time = convert_timestamp(match_obj['endTime'])
-
-    match_tweets = {}
-    match_tweets['result'] = []
-    try:
-        match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
-                                                  {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
-                                                  {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
-    except OperationFailure:
-        pass
-
+# assume that minute_list is already sorted by time, ascending
+def get_sentiment_by_minute(minute_list, entity_list):
     entity_sentiments = defaultdict(list)
-    # sort by minute
-    match_tweets['result'] = sorted(match_tweets['result'], key=lambda x: x['_id'])
-    for minute in match_tweets['result']:
+    for minute in minute_list:
         minute_tweets = minute['tweets']
         # filter tweets by entity mention
         for idx,entity in enumerate(entity_list):
@@ -96,7 +73,6 @@ def get_tweets_in_window(match_obj):
             # avoid division by 0
             num_tweets = 1
             if len(entity_tweets) > 0:
-                # using the total number of tweets instead of entity tweets as a proxy to 'current hype about this entity'
                 num_tweets = len(entity_tweets)
             avg_sentiment = sum([get_sentiment(t['text']) for t in entity_tweets ]) / num_tweets
             # IMPORTANT: add 'Z' to make this UTC! (ISODate format)
@@ -107,12 +83,62 @@ def get_tweets_in_window(match_obj):
     for entity, sentiment_list in entity_sentiments.items():
         tweets_with_sentiment['entitySentiments'].append({ 'entityName': entity, 'sentiments': sentiment_list })
 
+    return tweets_with_sentiment
+
+# match_obj is { 'matchName', 'time': { start_time: '', end_time: '' }} --> times are in the format: 'Thu Jun 12 16:08:42 +0000 2014'
+# Mongo shell format looks like this:  ISODate("2014-06-12T15:31:18Z")
+# get the substring from (0,17) for minutes
+# db.tweets.find({'timestamp': { $gte: ISODate("2014-06-12T15:31:18Z") }} ).count()
+def get_tweets_in_window(match_obj, batches=False):
+    match_name = match_obj['matchName']
+    entity_list = match_obj['entities']
+    significant_events = match_obj['significantEvents']
+    start_time = convert_timestamp(match_obj['startTime'])
+    end_time = convert_timestamp(match_obj['endTime'])
+
+    minute_groups = []
+    # aggregate in batches if the data is big
+    if batches:
+        # separate the time window into N batches
+        # end_time - start_time
+        diff = end_time - start_time
+        total_minutes, remainder = divmod(diff.seconds, 60)
+        # add one to cover the remainder
+        total_minutes += 1
+        # 10min batches
+        num_batches = int(math.ceil(total_minutes / 10))
+        batch_size = datetime.timedelta(minutes=10)
+
+
+        for i in range(num_batches):
+            batch_start = start_time + (i * batch_size)
+            batch_end = start_time + batch_size
+            match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
+                                                      {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
+                                                      {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
+            minute_groups += sorted(match_tweets['result'], key=lambda x: x['_id'])
+
+    else:
+        try:
+            match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
+                                                      {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
+                                                      {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
+
+            # sort by minute
+            minute_groups = sorted(match_tweets['result'], key=lambda x: x['_id'])
+        except OperationFailure:
+            pass
+
+    tweets_with_sentiment = get_sentiment_by_minute(minute_groups, entity_list)
     tweets_with_sentiment['matchName'] = match_name
     tweets_with_sentiment['startTime'] = start_time
     tweets_with_sentiment['endTime'] = end_time
     tweets_with_sentiment['significantEvents'] = significant_events
 
     return tweets_with_sentiment
+
+# Working - add function to compute by time interval (start with 10 min)
+#     yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
 
 
 if __name__ == '__main__':
