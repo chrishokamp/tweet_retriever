@@ -109,11 +109,10 @@ def get_tweets_in_window(match_obj, batches=False):
         num_batches = int(math.ceil(total_minutes / 10))
         batch_size = datetime.timedelta(minutes=10)
 
-
         for i in range(num_batches):
             batch_start = start_time + (i * batch_size)
-            batch_end = start_time + batch_size
-            match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': start_time, '$lte': end_time }}},
+            batch_end = batch_start + batch_size
+            match_tweets = collection.aggregate([{'$match': { 'timestamp': { '$gte': batch_start, '$lte': batch_end }}},
                                                       {'$project': { 'minute': {'$substr': ['$timestamp', 0, 16]}, 'text': 1 }},
                                                       {'$group': { '_id': '$minute', 'tweets': { '$push': { 'text': '$text' }}}}])
             minute_groups += sorted(match_tweets['result'], key=lambda x: x['_id'])
